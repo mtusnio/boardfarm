@@ -56,10 +56,11 @@ node('boardfarm') {
         def dl_path = "${image_path}/${image_name}"
         sh "wget '${dl_path}' -O ${env.WEBSERVER_PATH}/openwrt.ubi"
 
+        def wan_ip = env.WAN_IP
         sh "sshpass -p 'root' scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            ${env.OTA_DIRECTORY}/ota_update.sh ${env.OTA_DIRECTORY}/ota_verify.sh root@${env.WAN_IP}:~/"
+            ${env.OTA_DIRECTORY}/ota_update.sh ${env.OTA_DIRECTORY}/ota_verify.sh root@${wan_ip}:~/"
             sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            root@${env.WAN_IP} '/root/ota_update.sh http://${env.WEBSERVER_IP}/openwrt.ubi 192.168.0.2'"
+            root@${wan_ip} '/root/ota_update.sh http://${env.WEBSERVER_IP}/openwrt.ubi 192.168.0.2'"
         sh 'sleep 180'
 
         sh 'echo "ifconfig eth0 up" > /dev/ttyUSB0'
@@ -93,7 +94,7 @@ node('boardfarm') {
                 /etc/opkg/distfeeds.conf' > /dev/ttyUSB0"
         }
         sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            root@${env.WAN_IP} \"/root/ota_verify.sh 192.168.0.2 && rm /root/ota_*\""
+            root@${wan_ip} \"/root/ota_verify.sh 192.168.0.2 && rm /root/ota_*\""
     }
 
     stage("Run tests") {
@@ -109,6 +110,7 @@ node('boardfarm') {
                     [$class: 'PruneStaleBranch'],
                 ],
         ])
+        sh "sed -i 's/10.40.9.2/${wan_ip}/' boardfarm_config.json"
         sh "mkdir -p '${WORKSPACE}/results'"
         sh "export USER='jenkins'; \
             ./bft -x ${params.TEST_SUITE} -n ci40_dut \
