@@ -72,7 +72,6 @@ node('boardfarm') {
         }
 
         def dl_path = "${image_path}/${image_name}"
-        sh "wget '${dl_path}' -O ${env.WEBSERVER_PATH}/openwrt.ubi"
 
         /* Reconfigure the DUT in case it came back from a reboot and no networking
            is available */
@@ -84,7 +83,8 @@ node('boardfarm') {
         sh "sshpass -p 'root' scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             scripts/ota_update.sh scripts/ota_verify.sh root@${wan_ip}:~/"
             sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            root@${wan_ip} '/root/ota_update.sh http://${env.WEBSERVER_IP}/openwrt.ubi 192.168.0.2'"
+            root@${wan_ip} '/root/ota_update.sh ${dl_path} 192.168.0.2'"
+
         sh 'sleep 180'
 
         configureDut();
