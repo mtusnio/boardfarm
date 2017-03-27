@@ -78,9 +78,11 @@ node('boardfarm') {
            is available */
         configureDut();
 
+        checkout scm
+
         def wan_ip = env.WAN_IP
         sh "sshpass -p 'root' scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-            ${env.OTA_DIRECTORY}/ota_update.sh ${env.OTA_DIRECTORY}/ota_verify.sh root@${wan_ip}:~/"
+            scripts/ota_update.sh scripts/ota_verify.sh root@${wan_ip}:~/"
             sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             root@${wan_ip} '/root/ota_update.sh http://${env.WEBSERVER_IP}/openwrt.ubi 192.168.0.2'"
         sh 'sleep 180'
@@ -110,18 +112,6 @@ node('boardfarm') {
     }
 
     stage("Run tests") {
-        checkout([$class: 'GitSCM',
-                userRemoteConfigs: scm.userRemoteConfigs,
-                branches: scm.branches,
-                doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-                submoduleCfg: scm.submoduleCfg,
-                browser: scm.browser,
-                gitTool: scm.gitTool,
-                extensions: scm.extensions + [
-                    [$class: 'CleanCheckout'],
-                    [$class: 'PruneStaleBranch'],
-                ],
-        ])
         sh "sed -i 's/10.40.9.2/${wan_ip}/' boardfarm_config.json"
         sh "mkdir -p '${WORKSPACE}/results'"
         sh "export USER='jenkins'; \
