@@ -2,7 +2,7 @@
     "ci40_dut":{
         "board_type": "ci40",
         "connection_type": "local_serial",
-        "conn_cmd": "miniterm.py -b 115200 /dev/ttyUSB0",
+        "conn_cmd": "miniterm.py /dev/ttyUSB0 115200 --raw --eol lf",
         "lan_device": "192.167.0.6",
         "location": "kl",
         "wan_device": "10.40.9.2",
