@@ -85,7 +85,7 @@ node('boardfarm') {
             sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             root@${wan_ip} '/root/ota_update.sh ${dl_path} 192.168.0.2'"
 
-        sh 'sleep 180'
+        sh 'sleep 60'
 
         configureDut();
 
