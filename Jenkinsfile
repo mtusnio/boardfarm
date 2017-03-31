@@ -39,7 +39,7 @@ properties([
 ])
 
 node('boardfarm') {
-    stage("Configure") {
+    stage("Prepare") {
         deleteDir()
 
         def image_path = params.IMAGE_PATH.trim()
@@ -71,7 +71,7 @@ node('boardfarm') {
             error("Passed null image path")
         }
 
-        def dl_path = "${image_path}/${image_name}"
+        dl_path = "${image_path}/${image_name}"
 
         /* Reconfigure the DUT in case it came back from a reboot and no networking
            is available */
@@ -80,11 +80,14 @@ node('boardfarm') {
         checkout scm
 
         def wan_ip = env.WAN_IP
+    }
+    stage("Upgrade") {
         sh "sshpass -p 'root' scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             scripts/ota_update.sh scripts/ota_verify.sh root@${wan_ip}:~/"
             sh "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             root@${wan_ip} '/root/ota_update.sh ${dl_path} 192.168.0.2'"
-
+    }
+    stage("Configure") {
         sh 'sleep 60'
 
         configureDut();
